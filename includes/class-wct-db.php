@@ -33,9 +33,12 @@ class WCT_DB {
             created_at DATETIME NOT NULL,
             updated_at DATETIME NOT NULL,
             abandoned_notified_at DATETIME NULL,
+            abandoned_at DATETIME NULL,
+            cart_hash CHAR(32) NULL,
             PRIMARY KEY (id),
             UNIQUE KEY session_key (session_key),
             KEY status (status),
+            KEY status_abandoned (status, abandoned_at),
             KEY order_id (order_id),
             KEY email (email(191)),
             KEY last_activity_at (last_activity_at)
