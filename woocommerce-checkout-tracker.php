@@ -1,0 +1,38 @@
+<?php
+/**
+ * Plugin Name: WooCommerce Checkout Tracker
+ * Description: Captures initiated checkout activity, checkout fields and cart snapshots, and links converted checkout sessions to WooCommerce orders.
+ * Version: 1.3.0
+ * Author: OpenAI
+ * Requires at least: 6.4
+ * Requires PHP: 7.4
+ * Requires Plugins: woocommerce
+ * Text Domain: wc-checkout-tracker
+ */
+if ( ! defined( 'ABSPATH' ) ) exit;
+
+define( 'WCT_VERSION', '1.3.0' );
+define( 'WCT_FILE', __FILE__ );
+define( 'WCT_DIR', plugin_dir_path( __FILE__ ) );
+define( 'WCT_URL', plugin_dir_url( __FILE__ ) );
+
+require_once WCT_DIR . 'includes/class-wct-db.php';
+require_once WCT_DIR . 'includes/class-wct-tracker.php';
+require_once WCT_DIR . 'includes/class-wct-admin.php';
+
+register_activation_hook( __FILE__, array( 'WCT_DB', 'install' ) );
+register_deactivation_hook( __FILE__, array( 'WCT_Tracker', 'deactivate' ) );
+
+add_action( 'plugins_loaded', function() {
+    if ( ! class_exists( 'WooCommerce' ) ) {
+        add_action( 'admin_notices', function() {
+            if ( current_user_can( 'activate_plugins' ) ) {
+                echo '<div class="notice notice-error"><p><strong>WooCommerce Checkout Tracker</strong> requires WooCommerce to be installed and active.</p></div>';
+            }
+        } );
+        return;
+    }
+    WCT_DB::maybe_upgrade();
+    WCT_Tracker::init();
+    WCT_Admin::init();
+} );
