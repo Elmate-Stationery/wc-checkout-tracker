@@ -1,9 +1,11 @@
 {
   "name": "wc-checkout-tracker",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "private": true,
   "description": "WooCommerce Checkout Tracker (WordPress plugin). package.json exists only for `npm version patch|minor|major`.",
   "scripts": {
+    "lint": "node tools/lint.js",
+    "preversion": "node tools/lint.js",
     "version": "node tools/sync-version.js && git add woocommerce-checkout-tracker.php readme.txt"
   }
 }

@@ -8,6 +8,12 @@ class WCT_Admin {
         add_action('admin_post_wct_delete_session',array(__CLASS__,'delete_session'));
         add_action('admin_enqueue_scripts',array(__CLASS__,'assets'));
         add_action('wp_ajax_wct_session_detail',array(__CLASS__,'ajax_detail'));
+        add_filter('plugin_action_links_'.plugin_basename(WCT_FILE),array(__CLASS__,'plugin_links'));
+    }
+    // Plugins screen: Settings | Documentation next to Deactivate.
+    public static function plugin_links($links){
+        array_unshift($links,'<a href="'.esc_url(admin_url('admin.php?page=wct-settings')).'">Settings</a>','<a href="'.esc_url(admin_url('admin.php?page=wct-settings&tab=docs')).'">Documentation</a>');
+        return $links;
     }
     public static function menu() {
         add_submenu_page('woocommerce','Checkout Sessions','Checkout Sessions','manage_woocommerce','wct-checkouts',array(__CLASS__,'page'));
@@ -112,7 +118,7 @@ class WCT_Admin {
         // One query each for the whole page: country fields (phone numbers), coupons, link-open stats.
         $countries=$wa&&$ids?WCT_Recovery::session_fields($ids,WCT_Recovery::COUNTRY_KEYS):array(); $coupons=WCT_Coupons::latest_for_sessions($ids); $stats=$wa?WCT_Recovery::link_stats($ids):array();
         $cols=9+($wa?1:0)+($cp?1:0);
-        echo '<div class="wrap wct-wrap"><h1>WooCommerce Checkout Sessions</h1><p>Tracks checkout starts, field activity, cart snapshots and converted orders.</p>';
+        echo '<div class="wrap wct-wrap"><h1>WooCommerce Checkout Sessions</h1><p>Tracks checkout starts, field activity, cart snapshots and converted orders. <a href="'.esc_url(admin_url('admin.php?page=wct-settings&tab=docs')).'">Help &amp; documentation</a></p>';
         echo '<div class="wct-cards">'; foreach(array('initiated','abandoned','converted') as $x){$n=(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $st WHERE status=%s",$x)); echo '<div class="wct-card"><strong>'.esc_html(self::status_label($x)).'</strong><span>'.esc_html($n).'</span></div>'; } echo '</div>';
         echo '<form method="get" class="wct-filters"><input type="hidden" name="page" value="wct-checkouts"><input type="search" name="s" value="'.esc_attr($search).'" placeholder="Search name, phone, email, session..."><select name="status"><option value="">All statuses</option>'; foreach(array('initiated','abandoned','converted') as $x) echo '<option value="'.esc_attr($x).'" '.selected($status,$x,false).'>'.esc_html(self::status_label($x)).'</option>'; echo '</select><button class="button">Filter</button></form>';
         echo '<div class="wct-table-scroll"><table class="widefat striped wct-sessions"><thead><tr><th>Session</th><th>Customer</th><th>Contact</th><th>Items</th><th>Total</th><th>Status</th><th>Last Activity</th><th>Order</th>'.($cp?'<th class="wct-coupon-col">Coupon</th>':'').($wa?'<th class="wct-wa-col">WhatsApp</th>':'').'<th class="wct-actions"><span class="screen-reader-text">Actions</span></th></tr></thead><tbody>';
@@ -315,12 +321,13 @@ class WCT_Admin {
     }
     public static function settings_page(){
         if(!current_user_can('manage_woocommerce')) return;
-        $s=WCT_Tracker::settings(); $tab=in_array($_GET['tab']??'',array('whatsapp','coupon'),true)?$_GET['tab']:'general';
+        $s=WCT_Tracker::settings(); $tab=in_array($_GET['tab']??'',array('whatsapp','coupon','docs'),true)?$_GET['tab']:'general';
         $url=function($t){ return esc_url(admin_url('admin.php?page=wct-settings'.('general'===$t?'':'&tab='.$t))); };
         echo '<div class="wrap wct-wrap"><h1>Checkout Tracker Settings</h1>';
         if(isset($_GET['wct_error'])) echo '<div class="notice notice-error"><p>Not saved: '.esc_html(wp_unslash($_GET['wct_error'])).'</p></div>';
         if(isset($_GET['updated'])) echo '<div class="notice notice-success is-dismissible"><p>Settings saved.</p></div>';
-        echo '<nav class="nav-tab-wrapper wct-nav-tabs"><a href="'.$url('general').'" class="nav-tab'.('general'===$tab?' nav-tab-active':'').'">General</a><a href="'.$url('whatsapp').'" class="nav-tab'.('whatsapp'===$tab?' nav-tab-active':'').'">WhatsApp &amp; Cart Recovery</a><a href="'.$url('coupon').'" class="nav-tab'.('coupon'===$tab?' nav-tab-active':'').'">Recovery Coupon</a></nav>';
+        echo '<nav class="nav-tab-wrapper wct-nav-tabs"><a href="'.$url('general').'" class="nav-tab'.('general'===$tab?' nav-tab-active':'').'">General</a><a href="'.$url('whatsapp').'" class="nav-tab'.('whatsapp'===$tab?' nav-tab-active':'').'">WhatsApp &amp; Cart Recovery</a><a href="'.$url('coupon').'" class="nav-tab'.('coupon'===$tab?' nav-tab-active':'').'">Recovery Coupon</a><a href="'.$url('docs').'" class="nav-tab'.('docs'===$tab?' nav-tab-active':'').'">Documentation</a></nav>';
+        if('docs'===$tab){ include WCT_DIR.'includes/views/documentation.php'; echo '</div>'; return; }
         echo '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'"><input type="hidden" name="action" value="wct_save_settings"><input type="hidden" name="tab" value="'.esc_attr($tab).'">'.wp_nonce_field('wct_settings','wct_nonce',true,false).'<table class="form-table" role="presentation">';
         if('coupon'===$tab){
             $chips=''; foreach(WCT_Recovery::PLACEHOLDERS+WCT_Coupons::PLACEHOLDERS as $ph=>$help) if('{cart_restore_url}'!==$ph) $chips.='<button type="button" class="button button-small wct-chip" data-target="wct-coupon-template" data-insert="'.esc_attr($ph).'" title="'.esc_attr($help).'"><code>'.esc_html($ph).'</code></button>';

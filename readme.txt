@@ -1,6 +1,8 @@
 WooCommerce Checkout Tracker
 ============================
-Version: 1.7.0
+Version: 1.7.1
+
+Documentation: WooCommerce > Checkout Tracker > Documentation (inside WP Admin).
 
 Features
 - Creates a checkout session when a customer opens WooCommerce checkout.
@@ -26,6 +28,12 @@ Installation
 Privacy
 This plugin stores customer checkout information. Configure retention and provide any required privacy notice/consent for your jurisdiction. Never modify the plugin to collect payment card data, CVV/CVC, passwords or payment tokens.
 
+
+= 1.7.1 =
+* Fixed: a PHP syntax error in class-wct-recovery.php (1.7.0) that caused "There has been a critical error" on every page.
+* Safe loading: if a plugin file is missing or damaged, the plugin is installed twice, or PHP/WooCommerce is too old, the plugin now disables itself with an admin notice instead of taking the site down.
+* New Documentation tab under WooCommerce > Checkout Tracker (also linked from the Plugins screen and the Checkout Sessions page).
+* npm run lint: syntax check for every PHP/JS file; runs automatically before npm version.
 
 = 1.7.0 =
 * Recovery coupons for abandoned checkout sessions: one-time WooCommerce coupons (percentage or fixed, optional minimum cart and maximum discount, expiry) generated per session from Add Coupon, with defaults in the new Recovery Coupon settings tab.

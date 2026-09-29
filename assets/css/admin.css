@@ -130,3 +130,35 @@ fieldset.wct-form__row legend{width:100%;margin-bottom:4px;padding:0;font-weight
 .wct-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .wct-sessions{min-width:1060px}
 .wct-order-ended{color:#b32d2e;font-weight:600}
+
+/* Documentation tab */
+.wct-doc{display:grid;grid-template-columns:230px minmax(0,1fr);gap:28px;align-items:start;margin-top:16px}
+.wct-doc__toc{position:sticky;top:46px;padding:16px;border:1px solid #dcdcde;border-radius:6px;background:#fff}
+.wct-doc__toc strong{display:block;margin-bottom:8px}
+.wct-doc__toc ol{margin:0 0 12px 18px}
+.wct-doc__toc li{margin:0 0 6px;line-height:1.35}
+.wct-doc__toc a{text-decoration:none}
+.wct-doc__toc a:hover,.wct-doc__toc a:focus{text-decoration:underline}
+.wct-doc__body{max-width:880px;padding:8px 28px 28px;border:1px solid #dcdcde;border-radius:6px;background:#fff;font-size:14px;line-height:1.6}
+.wct-doc__body section{padding-top:8px;scroll-margin-top:46px}
+.wct-doc__body section+section{margin-top:28px;border-top:1px solid #f0f0f1}
+.wct-doc__body h2{margin:16px 0 10px;font-size:20px}
+.wct-doc__body h3{margin:20px 0 8px;font-size:15px}
+.wct-doc__body h4{margin:16px 0 6px;font-size:14px}
+.wct-doc__body ul,.wct-doc__body ol{margin-left:20px}
+.wct-doc__body li{margin-bottom:6px}
+.wct-doc__body code{font-size:12.5px}
+.wct-doc-steps li{padding-left:4px}
+.wct-doc-table{margin:8px 0 12px;table-layout:auto}
+.wct-doc-table th,.wct-doc-table td{vertical-align:top}
+.wct-doc-note,.wct-doc-warn{margin:12px 0;padding:10px 14px;border-left:4px solid #72aee6;background:#f0f6fc}
+.wct-doc-warn{border-left-color:#dba617;background:#fcf9e8}
+.wct-doc-on{color:#146c2e;font-weight:600}
+.wct-doc-off{color:#8a2424;font-weight:600}
+.wct-doc-faq dt{margin-top:14px;font-weight:600}
+.wct-doc-faq dd{margin:4px 0 0 0;color:#3c434a}
+@media (max-width:960px){.wct-doc{grid-template-columns:minmax(0,1fr)}.wct-doc__toc{position:static}.wct-doc__body{padding:4px 16px 20px}}
+@media (max-width:600px){.wct-doc-table{display:block;overflow-x:auto}}
+.wct-doc__body ul{list-style:disc}
+.wct-doc__body ol{list-style:decimal}
+.wct-doc__toc ol{list-style:decimal}

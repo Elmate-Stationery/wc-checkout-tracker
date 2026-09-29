@@ -296,7 +296,7 @@ class WCT_Recovery {
             WCT_DB::log_event( $staff ? 'link_tested_by_staff' : 'link_opened', $row->id, $event );
             // A converted session never restores (and never re-applies its coupon), even if its order was cancelled.
             $outcome = WCT_Coupons::order_outcome( $row->order_id );
-            $message = in_array( $outcome, array( 'cancelled', 'trashed' ), true ) ? 'This order was cancelled.
+            $message = in_array( $outcome, array( 'cancelled', 'trashed' ), true ) ? 'This order was cancelled.'
                 : ( 'payment failed' === $outcome ? 'The payment for this order did not go through. Please use the payment link in your order email, or contact us.' : 'This order has already been placed. Thank you!' );
             wc_add_notice( $message, 'notice' );
             self::go( wc_get_cart_url() );
