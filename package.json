@@ -1,6 +1,6 @@
 {
   "name": "wc-checkout-tracker",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "private": true,
   "description": "WooCommerce Checkout Tracker (WordPress plugin). package.json exists only for `npm version patch|minor|major`.",
   "scripts": {

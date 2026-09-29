@@ -1,6 +1,6 @@
 WooCommerce Checkout Tracker
 ============================
-Version: 1.7.2
+Version: 1.7.3
 
 Documentation: WooCommerce > Checkout Tracker > Documentation (inside WP Admin).
 
@@ -28,6 +28,9 @@ Installation
 Privacy
 This plugin stores customer checkout information. Configure retention and provide any required privacy notice/consent for your jurisdiction. Never modify the plugin to collect payment card data, CVV/CVC, passwords or payment tokens.
 
+
+= 1.7.3 =
+* 
 
 = 1.7.2 =
 * WhatsApp + Coupon message: each cart product is on its own line. The default coupon message now reads "You left these items in your cart at {site_name}:" followed by the list; an unedited copy of the old default is upgraded automatically.
