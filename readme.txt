@@ -1,6 +1,6 @@
 WooCommerce Checkout Tracker
 ============================
-Version: 1.5.0
+Version: 1.5.1
 
 Features
 - Creates a checkout session when a customer opens WooCommerce checkout.
@@ -26,6 +26,9 @@ Installation
 Privacy
 This plugin stores customer checkout information. Configure retention and provide any required privacy notice/consent for your jurisdiction. Never modify the plugin to collect payment card data, CVV/CVC, passwords or payment tokens.
 
+
+= 1.5.1 =
+* 
 
 = 1.5.0 =
 * Session details open in a responsive modal (Overview / Checkout fields / Cart / Technical tabs, field filter) instead of below the list; ?view=ID links open it directly.
