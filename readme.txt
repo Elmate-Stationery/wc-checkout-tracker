@@ -29,6 +29,9 @@ Privacy
 This plugin stores customer checkout information. Configure retention and provide any required privacy notice/consent for your jurisdiction. Never modify the plugin to collect payment card data, CVV/CVC, passwords or payment tokens.
 
 
+= Unreleased =
+* Coupon offer popup: the OK button uses the site primary colour (theme variable --tm-primary-color, fallback #006EB6) and can no longer be greyed out by theme button styles.
+
 = 1.7.3 =
 * 
 

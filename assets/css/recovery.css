@@ -13,8 +13,12 @@ html.wct-offer-open,html.wct-offer-open body{overflow:hidden}
 .wct-offer__row.is-total dt,.wct-offer__row.is-total dd{color:var(--wct-ink);font-size:20px;font-weight:700}
 .wct-offer__note{margin:0 0 18px;color:var(--wct-muted);font-size:14px}
 .wct-offer__actions{display:flex;flex-direction:column;gap:8px}
-.wct-offer__cta{display:block;width:100%;padding:14px 16px;border:0;border-radius:8px;background:var(--wct-accent);color:#fff!important;font-size:17px;font-weight:600;text-align:center;text-decoration:none!important;cursor:pointer}
-.wct-offer__cta:hover,.wct-offer__cta:focus-visible{filter:brightness(.93)}
+/* OK button: the site primary colour (theme variable --tm-primary-color, else #006EB6 = rgb(0,110,182)). Theme button
+   styles (background, colour, borders, focus outlines) are overridden in every state so the button is always readable. */
+.wct-offer{--wct-button:var(--tm-primary-color,#006eb6)}
+html body .wct-offer .wct-offer__box .wct-offer__cta,html body .wct-offer .wct-offer__box .wct-offer__cta:hover,html body .wct-offer .wct-offer__box .wct-offer__cta:focus,html body .wct-offer .wct-offer__box .wct-offer__cta:active{display:block;width:100%;min-height:48px;margin:0;padding:14px 16px;border:0!important;border-radius:8px;background:var(--wct-button)!important;background-image:none!important;color:#fff!important;font-size:17px;font-weight:600;line-height:1.2;letter-spacing:normal;text-align:center;text-transform:none;text-decoration:none!important;text-shadow:none!important;box-shadow:none!important;outline:none!important;opacity:1!important;cursor:pointer}
+html body .wct-offer .wct-offer__box .wct-offer__cta:hover{filter:brightness(.9)}
+html body .wct-offer .wct-offer__box .wct-offer__cta:focus-visible{outline:3px solid var(--wct-button)!important;outline-offset:3px!important}
 .wct-offer :focus-visible{outline:3px solid #2271b1;outline-offset:2px}
 .wct-toasts{position:fixed;left:50%;bottom:20px;z-index:99999;display:flex;flex-direction:column;gap:8px;width:min(560px,calc(100vw - 32px));transform:translateX(-50%)}
 .wct-toast{display:flex;align-items:flex-start;gap:12px;padding:12px 12px 12px 16px;border-left:4px solid #2271b1;border-radius:6px;background:#fff;color:#1d2327;box-shadow:0 6px 24px rgba(0,0,0,.18);font-size:15px;line-height:1.45}
