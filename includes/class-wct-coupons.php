@@ -5,7 +5,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 // discount maths, order lines and its atomic one-time-use hold) that only works in a browser that opened the
 // session's coupon link. This plugin's coupons table is the source of truth for status, expiry and history.
 class WCT_Coupons {
-    const DEFAULT_TEMPLATE = "Hi {first_name},\n\nYou left {cart_items} in your cart at {site_name}.\n\nHere is {coupon_discount} off, just for you: {coupon_code}\nValid until {coupon_expires}.\n\nComplete your order here:\n{coupon_restore_url}";
+    // In this message {cart_items} is one product per line, so the list gets its own paragraph.
+    const DEFAULT_TEMPLATE = "Hi {first_name},\n\nYou left these items in your cart at {site_name}:\n{cart_items}\n\nHere is {coupon_discount} off, just for you: {coupon_code}\nValid until {coupon_expires}.\n\nComplete your order here:\n{coupon_restore_url}";
+    // Default of 1.7.0-1.7.1 (items inline); saved, unedited copies of it are upgraded to DEFAULT_TEMPLATE.
+    const LEGACY_TEMPLATE  = "Hi {first_name},\n\nYou left {cart_items} in your cart at {site_name}.\n\nHere is {coupon_discount} off, just for you: {coupon_code}\nValid until {coupon_expires}.\n\nComplete your order here:\n{coupon_restore_url}";
     const PLACEHOLDERS = array(
         '{coupon_code}'        => 'The coupon code',
         '{coupon_discount}'    => 'e.g. "10%", "10% (up to ৳500)" or "৳200"',
@@ -424,7 +427,7 @@ class WCT_Coupons {
         }
         wp_enqueue_style( 'wct-recovery', WCT_URL . 'assets/css/recovery.css', array(), wct_asset_ver( 'assets/css/recovery.css' ) );
         wp_enqueue_script( 'wct-recovery', WCT_URL . 'assets/js/recovery.js', array(), wct_asset_ver( 'assets/js/recovery.js' ), true );
-        wp_localize_script( 'wct-recovery', 'WCTRecovery', array( 'offer' => $offer, 'onCheckout' => is_checkout(), 'checkoutUrl' => wc_get_checkout_url(), 'context' => is_checkout() ? 'wc/checkout' : 'wc/cart' ) );
+        wp_localize_script( 'wct-recovery', 'WCTRecovery', array( 'offer' => $offer, 'context' => is_checkout() ? 'wc/checkout' : 'wc/cart' ) );
     }
     // Always computed from the current cart and WooCommerce's own discount calculation.
     private static function offer_data( $id ) {

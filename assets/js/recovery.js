@@ -11,8 +11,6 @@
     var last=document.activeElement;
     var overlay=node('div','wct-offer');
     var box=node('div','wct-offer__box'); box.setAttribute('role','dialog'); box.setAttribute('aria-modal','true'); box.setAttribute('aria-labelledby','wct-offer-title'); box.tabIndex=-1;
-    var x=node('button','wct-offer__close'); x.type='button'; x.setAttribute('aria-label','Close'); x.innerHTML='&times;';
-    box.appendChild(x);
     box.appendChild(node('h2','wct-offer__title',o.locked ? 'Your cart is waiting' : 'Your special offer'));
     box.lastChild.id='wct-offer-title';
     var rows=node('dl','wct-offer__rows');
@@ -27,12 +25,10 @@
       box.appendChild(rows);
       box.appendChild(node('p','wct-offer__note','Coupon '+o.code+' is applied · valid until '+o.expires+'. Shipping, if any, is added at checkout.'));
     }
+    // A single OK button that only closes the popup: no navigation, and the restored cart and coupon stay as they are.
     var actions=node('div','wct-offer__actions');
-    var cta;
-    if(cfg.onCheckout){ cta=node('button','wct-offer__cta','Buy now'); cta.type='button'; cta.addEventListener('click',close); }
-    else { cta=node('a','wct-offer__cta','Proceed to checkout'); cta.href=cfg.checkoutUrl; }
-    var later=node('button','wct-offer__later','Not now'); later.type='button';
-    actions.appendChild(cta); actions.appendChild(later); box.appendChild(actions);
+    var ok=node('button','wct-offer__cta','OK'); ok.type='button';
+    actions.appendChild(ok); box.appendChild(actions);
     overlay.appendChild(box); document.body.appendChild(overlay);
     document.documentElement.classList.add('wct-offer-open');
     function close(){
@@ -41,16 +37,12 @@
       if(last && last.focus) last.focus();
     }
     function keys(e){
-      if(e.key==='Escape'){ e.preventDefault(); close(); return; }
-      if(e.key!=='Tab') return;
-      var f=[].slice.call(box.querySelectorAll('a[href],button')); var first=f[0], end=f[f.length-1];
-      if(e.shiftKey && document.activeElement===first){ e.preventDefault(); end.focus(); }
-      else if(!e.shiftKey && document.activeElement===end){ e.preventDefault(); first.focus(); }
+      if(e.key==='Escape'){ e.preventDefault(); close(); return; } // same as OK, for keyboard users
+      if(e.key==='Tab'){ e.preventDefault(); ok.focus(); }        // OK is the only control
     }
-    x.addEventListener('click',close); later.addEventListener('click',close);
-    overlay.addEventListener('click',function(e){ if(e.target===overlay) close(); });
+    ok.addEventListener('click',close);
     document.addEventListener('keydown',keys,true);
-    cta.focus();
+    ok.focus();
   }
 
   var toastWrap=null;

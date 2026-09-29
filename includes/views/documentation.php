@@ -174,7 +174,11 @@ $toc = array(
 <tr><td><code>{coupon_expires}</code></td><td>When the coupon expires, in your site's time.</td></tr>
 <tr><td><code>{coupon_restore_url}</code></td><td>The personal link that restores the cart <em>and</em> applies the coupon.</td></tr>
 </tbody></table>
-<p>All normal placeholders work in the coupon message too.</p>
+<p>All normal placeholders work in the coupon message too. In the coupon message <code>{cart_items}</code> lists <strong>one product per line</strong> (after 5 products it adds "+ N more"), so put it on its own line, as the default message does:</p>
+<pre class="wct-doc-pre">You left these items in your cart at {site_name}:
+{cart_items}
+
+Here is {coupon_discount} off, just for you: {coupon_code}</pre>
 </section>
 
 <section id="wct-doc-whatsapp">
@@ -240,7 +244,7 @@ $toc = array(
 <tr><td><span class="wct-cstatus wct-cstatus--revoked">Revoked</span></td><td>Ended early by staff.</td></tr>
 </tbody></table>
 <h3>The offer popup</h3>
-<p>Shown once, after a coupon link restores the cart: <em>Cart <?php echo $cur; ?>3,400 · Discount 10% / <?php echo $cur; ?>300 · New total <?php echo $cur; ?>3,100</em>, with a <strong>Buy now</strong> / <strong>Proceed to checkout</strong> button. The figures are the live cart before shipping. If the cart is below the minimum it says how much more to add instead.</p>
+<p>Shown once, after a coupon link restores the cart: <em>Cart <?php echo $cur; ?>3,400 · Discount 10% / <?php echo $cur; ?>300 · New total <?php echo $cur; ?>3,100</em>, with one <strong>OK</strong> button that simply closes the popup: the customer stays on the page, and the restored cart and coupon stay in place. The figures are the live cart before shipping. If the cart is below the minimum it says how much more to add instead.</p>
 <p class="wct-doc-warn">Recovery coupons also appear in <strong>Marketing → Coupons</strong>, described as "Recovery coupon for checkout session #N". Do not edit or delete them there; manage them from the Checkout Sessions screen.</p>
 </section>
 

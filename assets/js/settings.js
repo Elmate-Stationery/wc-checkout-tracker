@@ -9,8 +9,10 @@
   function render(area){
     var preview=document.getElementById(area.getAttribute('data-preview'));
     if(!preview) return;
-    var text=area.value;
-    Object.keys(sample).forEach(function(ph){ text=text.split(ph).join(sample[ph]); });
+    var text=area.value, set=sample;
+    // The coupon message lists one product per line, so its preview does too.
+    if(area.getAttribute('data-sample')==='coupon' && WCTSettings.couponItems){ set=Object.assign({},sample,{'{cart_items}':WCTSettings.couponItems}); }
+    Object.keys(set).forEach(function(ph){ text=text.split(ph).join(set[ph]); });
     preview.textContent=text; // textContent + CSS pre-wrap: no HTML is ever interpreted
   }
   document.addEventListener('click',function(e){

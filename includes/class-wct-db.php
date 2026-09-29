@@ -164,6 +164,12 @@ class WCT_DB {
         if ( version_compare( (string) get_option( 'wct_db_version', '0' ), '1.5.0', '<' ) && false === get_option( 'wct_purge_cursor' ) ) {
             add_option( 'wct_purge_cursor', 0 );
         }
+        // Upgrade an unedited copy of the old default coupon message to the new one (items on separate lines).
+        $settings = get_option( 'wct_settings' );
+        if ( is_array( $settings ) && isset( $settings['coupon_template'] ) && str_replace( "\r\n", "\n", $settings['coupon_template'] ) === WCT_Coupons::LEGACY_TEMPLATE ) {
+            $settings['coupon_template'] = WCT_Coupons::DEFAULT_TEMPLATE;
+            update_option( 'wct_settings', $settings );
+        }
         update_option( 'wct_db_version', WCT_VERSION );
         if ( false === get_option( 'wct_settings' ) ) {
             add_option( 'wct_settings', WCT_Tracker::defaults() );

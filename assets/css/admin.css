@@ -162,3 +162,4 @@ fieldset.wct-form__row legend{width:100%;margin-bottom:4px;padding:0;font-weight
 .wct-doc__body ul{list-style:disc}
 .wct-doc__body ol{list-style:decimal}
 .wct-doc__toc ol{list-style:decimal}
+.wct-doc-pre{margin:8px 0 12px;padding:10px 14px;border-radius:4px;background:#f6f7f7;font-size:12.5px;white-space:pre-wrap}

@@ -92,8 +92,9 @@ class WCT_Recovery {
     }
     // Fills the template. Only customer name, cart contents/total, the restore link and the store name are used,
     // never raw captured fields, so nothing sensitive can end up in a message.
-    // $template: the normal WhatsApp template unless given (the coupon template); $extra: more placeholders.
-    public static function message( $row, $restore_url, $template = null, $extra = array() ) {
+    // $template: the normal WhatsApp template unless given (the coupon template); $extra: more placeholders;
+    // $item_lines: {cart_items} as one product per line (coupon message) instead of comma-separated.
+    public static function message( $row, $restore_url, $template = null, $extra = array(), $item_lines = false ) {
         global $wpdb;
         $s = WCT_Tracker::settings();
         if ( null === $template ) $template = (string) $s['whatsapp_template'];
@@ -112,7 +113,7 @@ class WCT_Recovery {
             $total += (float) wc_get_price_to_display( $product, array( 'qty' => $qty ) );
         }
         $labels = array_map( array( __CLASS__, 'item_label' ), array_slice( $available, 0, self::MAX_ITEMS_IN_MESSAGE ) );
-        if ( count( $available ) > self::MAX_ITEMS_IN_MESSAGE ) $labels[] = sprintf( 'and %d more', count( $available ) - self::MAX_ITEMS_IN_MESSAGE );
+        if ( count( $available ) > self::MAX_ITEMS_IN_MESSAGE ) $labels[] = sprintf( $item_lines ? '+ %d more' : 'and %d more', count( $available ) - self::MAX_ITEMS_IN_MESSAGE );
         $cart_total = $available ? self::plain_price( $total, get_woocommerce_currency() ) : self::plain_price( $row->cart_total, $row->currency ?: get_woocommerce_currency() );
         $fields = self::session_fields( array( $row->id ), self::FIRST_NAME_KEYS );
         $name = trim( WCT_Tracker::redact_card_numbers( 'customer_name', (string) $row->customer_name ) );
@@ -121,7 +122,7 @@ class WCT_Recovery {
         $message = strtr( $template, $extra + array(
             '{first_name}'       => '' !== $first ? $first : 'there',
             '{customer_name}'    => '' !== $name ? $name : 'there',
-            '{cart_items}'       => $labels ? implode( ', ', $labels ) : 'some items',
+            '{cart_items}'       => $labels ? implode( $item_lines ? "\n" : ', ', $labels ) : 'some items',
             '{cart_total}'       => $cart_total,
             '{cart_restore_url}' => $restore_url,
             '{site_name}'        => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
@@ -176,7 +177,7 @@ class WCT_Recovery {
         $s = WCT_Tracker::settings();
         $restore = self::restore_url( self::create_token( $row->id, $coupon->id ) );
         $token_id = self::$last_token_id;
-        $message = self::message( $row, $restore, (string) $s['coupon_template'] ?: WCT_Coupons::DEFAULT_TEMPLATE, WCT_Coupons::placeholders( $coupon, $restore ) );
+        $message = self::message( $row, $restore, (string) $s['coupon_template'] ?: WCT_Coupons::DEFAULT_TEMPLATE, WCT_Coupons::placeholders( $coupon, $restore ), true );
         $url = 'https://wa.me/' . $number . '?text=' . rawurlencode( $message );
         $wpdb->query( $wpdb->prepare( 'UPDATE ' . WCT_DB::sessions_table() . ' SET whatsapp_coupon_contacted_at=%s, whatsapp_coupon_contacted_by=%d, whatsapp_coupon_contact_count=whatsapp_coupon_contact_count+1 WHERE id=%d', current_time( 'mysql', true ), get_current_user_id(), $row->id ) );
         WCT_Coupons::mark_sent( $coupon );
