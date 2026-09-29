@@ -1,6 +1,6 @@
 WooCommerce Checkout Tracker
 ============================
-Version: 1.4.0
+Version: 1.5.0
 
 Features
 - Creates a checkout session when a customer opens WooCommerce checkout.
@@ -27,6 +27,11 @@ Privacy
 This plugin stores customer checkout information. Configure retention and provide any required privacy notice/consent for your jurisdiction. Never modify the plugin to collect payment card data, CVV/CVC, passwords or payment tokens.
 
 
+= 1.5.0 =
+* Session details open in a responsive modal (Overview / Checkout fields / Cart / Technical tabs, field filter) instead of below the list; ?view=ID links open it directly.
+* One-time background cleanup after upgrading (also runs for sites on an early 1.4.0 build): deletes previously stored credential fields and redacts card numbers in other stored values.
+* Plugin assets are versioned by file modification time, so browser and plugin caches never serve an outdated stylesheet or script.
+
 = 1.4.0 =
 * Checkout block (Store API) orders are now marked Converted.
 * A returning customer whose previous session converted gets a new session instead of overwriting the old one.
@@ -35,7 +40,6 @@ This plugin stores customer checkout information. Configure retention and provid
 * Abandoned alerts: once per session, only with contact details and cart items, skipped if that email has ordered since, claimed atomically, max 25 per run.
 * HPOS: compatibility declared, order meta via WC_Order, admin order links via OrderUtil.
 * Stronger sensitive-field filtering and card-number redaction, also applied to email alerts and the admin view.
-* One-time background cleanup after upgrading: deletes previously stored credential fields and redacts card numbers in other stored values.
 
 == 1.3.0 ==
 * Added configurable abandoned checkout timeout (5–10080 minutes).

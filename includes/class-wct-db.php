@@ -70,8 +70,9 @@ class WCT_DB {
             KEY product_id (product_id)
         ) $charset;";
         dbDelta( $sql );
-        // Versions before 1.4.0 used a weaker filter; queue a one-time scan that removes sensitive rows they stored.
-        if ( version_compare( (string) get_option( 'wct_db_version', '0' ), '1.4.0', '<' ) && false === get_option( 'wct_purge_cursor' ) ) {
+        // Builds before 1.5.0 either used a weaker filter or shipped 1.4.0 without this cleanup; queue a one-time scan
+        // that removes sensitive rows they stored. Re-running it on already-clean data is harmless.
+        if ( version_compare( (string) get_option( 'wct_db_version', '0' ), '1.5.0', '<' ) && false === get_option( 'wct_purge_cursor' ) ) {
             add_option( 'wct_purge_cursor', 0 );
         }
         update_option( 'wct_db_version', WCT_VERSION );

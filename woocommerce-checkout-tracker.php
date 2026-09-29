@@ -2,8 +2,8 @@
 /**
  * Plugin Name: WooCommerce Checkout Tracker
  * Description: Captures initiated checkout activity, checkout fields and cart snapshots, and links converted checkout sessions to WooCommerce orders.
- * Version: 1.4.0
- * Author: OpenAI
+ * Version: 1.5.0
+ * Author: Elmates
  * Requires at least: 6.4
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -12,10 +12,16 @@
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WCT_VERSION', '1.4.0' );
+define( 'WCT_VERSION', '1.5.0' );
 define( 'WCT_FILE', __FILE__ );
 define( 'WCT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WCT_URL', plugin_dir_url( __FILE__ ) );
+
+// Asset version = plugin version + file modified time, so browsers and cache plugins pick up every change to a file.
+function wct_asset_ver( $path ) {
+    $mtime = @filemtime( WCT_DIR . $path );
+    return $mtime ? WCT_VERSION . '.' . $mtime : WCT_VERSION;
+}
 
 require_once WCT_DIR . 'includes/class-wct-db.php';
 require_once WCT_DIR . 'includes/class-wct-tracker.php';

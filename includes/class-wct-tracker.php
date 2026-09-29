@@ -67,7 +67,7 @@ class WCT_Tracker {
     }
     public static function assets() {
         if ( ! self::is_tracked_page() ) return;
-        wp_enqueue_script( 'wct-checkout', WCT_URL . 'assets/js/checkout.js', array( 'jquery' ), WCT_VERSION, true );
+        wp_enqueue_script( 'wct-checkout', WCT_URL . 'assets/js/checkout.js', array( 'jquery' ), wct_asset_ver( 'assets/js/checkout.js' ), true );
         wp_localize_script( 'wct-checkout', 'WCT', array(
             'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
             'nonce'     => wp_create_nonce( 'wct_checkout' ),
@@ -423,7 +423,7 @@ class WCT_Tracker {
         return (bool) wp_mail( $recipients, $subject, $body, $headers );
     }
 
-    // One-time scan of fields stored by versions before 1.4.0: deletes rows whose name marks them as a credential
+    // One-time scan of fields stored by versions before 1.5.0: deletes rows whose name marks them as a credential
     // and redacts card-like numbers in the rest. Works in id order from a saved cursor, so it resumes after a
     // timeout; each run stops after ~20s and schedules the next until the table is done.
     public static function purge_sensitive() {
