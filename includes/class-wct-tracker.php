@@ -31,6 +31,7 @@ class WCT_Tracker {
         add_action( 'woocommerce_store_api_checkout_order_processed', array( __CLASS__, 'store_api_order_processed' ) );
         add_filter( 'cron_schedules', array( __CLASS__, 'cron_schedules' ) );
         add_action( 'wct_maintenance', array( __CLASS__, 'maintenance' ) );
+        add_action( 'wct_purge_sensitive', array( __CLASS__, 'purge_sensitive' ) );
         self::ensure_schedule();
     }
     private static function settings() { return wp_parse_args( get_option( 'wct_settings', array() ), array( 'enabled' => 1, 'retention_days' => 90, 'abandon_timeout_minutes' => 60, 'email_alerts_enabled' => 0, 'email_alert_recipients' => get_option( 'admin_email' ) ) ); }
@@ -44,12 +45,15 @@ class WCT_Tracker {
         if ( ! wp_next_scheduled( 'wct_maintenance' ) ) {
             wp_schedule_event( time() + 5 * MINUTE_IN_SECONDS, 'wct_15_minutes', 'wct_maintenance' );
         }
+        if ( false !== get_option( 'wct_purge_cursor' ) && ! wp_next_scheduled( 'wct_purge_sensitive' ) ) {
+            wp_schedule_single_event( time(), 'wct_purge_sensitive' );
+        }
     }
     public static function reschedule() {
         wp_clear_scheduled_hook( 'wct_maintenance' );
         self::ensure_schedule();
     }
-    public static function deactivate() { wp_clear_scheduled_hook( 'wct_maintenance' ); }
+    public static function deactivate() { wp_clear_scheduled_hook( 'wct_maintenance' ); wp_clear_scheduled_hook( 'wct_purge_sensitive' ); }
 
     private static function is_tracked_page() {
         if ( ! function_exists( 'is_checkout' ) || ! is_checkout() || is_order_received_page() || is_checkout_pay_page() ) return false;
@@ -417,6 +421,34 @@ class WCT_Tracker {
         $body .= '<p><a href="' . esc_url( $url ) . '">View checkout session in WP Admin</a></p>';
         $headers = array( 'Content-Type: text/html; charset=UTF-8' );
         return (bool) wp_mail( $recipients, $subject, $body, $headers );
+    }
+
+    // One-time scan of fields stored by versions before 1.4.0: deletes rows whose name marks them as a credential
+    // and redacts card-like numbers in the rest. Works in id order from a saved cursor, so it resumes after a
+    // timeout; each run stops after ~20s and schedules the next until the table is done.
+    public static function purge_sensitive() {
+        $cursor = get_option( 'wct_purge_cursor' );
+        if ( false === $cursor ) return;
+        global $wpdb;
+        $ft = WCT_DB::fields_table(); $cursor = (int) $cursor; $batch = 500; $deadline = time() + 20;
+        do {
+            $rows = $wpdb->get_results( $wpdb->prepare( "SELECT id, field_key, field_value FROM $ft WHERE id > %d ORDER BY id LIMIT %d", $cursor, $batch ) );
+            foreach ( $rows as $r ) {
+                $cursor = (int) $r->id;
+                if ( self::is_sensitive_key( $r->field_key ) ) {
+                    $wpdb->delete( $ft, array( 'id' => $cursor ) );
+                    continue;
+                }
+                $clean = self::redact_card_numbers( $r->field_key, $r->field_value );
+                if ( $clean !== (string) $r->field_value ) $wpdb->update( $ft, array( 'field_value' => $clean ), array( 'id' => $cursor ) );
+            }
+            update_option( 'wct_purge_cursor', $cursor );
+        } while ( count( $rows ) === $batch && time() < $deadline );
+        if ( count( $rows ) < $batch ) {
+            delete_option( 'wct_purge_cursor' );
+            return;
+        }
+        wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'wct_purge_sensitive' );
     }
 
     public static function cleanup() {

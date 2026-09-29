@@ -10,4 +10,6 @@ $hpos_meta = $wpdb->prefix.'wc_orders_meta';
 if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $hpos_meta ) ) ) === $hpos_meta ) $wpdb->delete($hpos_meta, array('meta_key'=>'_wct_checkout_session_id'));
 delete_option('wct_settings');
 delete_option('wct_db_version');
+delete_option('wct_purge_cursor');
 wp_clear_scheduled_hook('wct_maintenance');
+wp_clear_scheduled_hook('wct_purge_sensitive');

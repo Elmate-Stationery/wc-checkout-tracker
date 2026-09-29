@@ -35,6 +35,7 @@ This plugin stores customer checkout information. Configure retention and provid
 * Abandoned alerts: once per session, only with contact details and cart items, skipped if that email has ordered since, claimed atomically, max 25 per run.
 * HPOS: compatibility declared, order meta via WC_Order, admin order links via OrderUtil.
 * Stronger sensitive-field filtering and card-number redaction, also applied to email alerts and the admin view.
+* One-time background cleanup after upgrading: deletes previously stored credential fields and redacts card numbers in other stored values.
 
 == 1.3.0 ==
 * Added configurable abandoned checkout timeout (5–10080 minutes).

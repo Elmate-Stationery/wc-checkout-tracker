@@ -70,6 +70,10 @@ class WCT_DB {
             KEY product_id (product_id)
         ) $charset;";
         dbDelta( $sql );
+        // Versions before 1.4.0 used a weaker filter; queue a one-time scan that removes sensitive rows they stored.
+        if ( version_compare( (string) get_option( 'wct_db_version', '0' ), '1.4.0', '<' ) && false === get_option( 'wct_purge_cursor' ) ) {
+            add_option( 'wct_purge_cursor', 0 );
+        }
         update_option( 'wct_db_version', WCT_VERSION );
         if ( false === get_option( 'wct_settings' ) ) {
             add_option( 'wct_settings', array( 'enabled' => 1, 'retention_days' => 90, 'abandon_timeout_minutes' => 60, 'email_alerts_enabled' => 0, 'email_alert_recipients' => get_option('admin_email') ) );
