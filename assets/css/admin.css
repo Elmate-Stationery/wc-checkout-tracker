@@ -66,3 +66,67 @@
   .wct-table td{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;padding:4px 12px;text-align:left}
   .wct-table td::before{content:attr(data-label);color:#50575e;font-weight:600}
 }
+
+/* WhatsApp */
+.wct-wa-col{width:130px}
+.wct-wa{display:inline-flex!important;align-items:center;gap:5px;color:#128c7e!important;border-color:#25d366!important}
+.wct-wa:hover,.wct-wa:focus{background:#e9fbf0!important;color:#075e54!important}
+.wct-wa[disabled]{opacity:.6}
+.wct-wa-icon{flex:none}
+.wct-wa-status{display:block;margin-top:4px;color:#646970;line-height:1.4}
+.wct-wa-send{margin-top:14px}
+.wct-wa-bubble{position:relative;max-width:420px;padding:10px 12px;border-radius:8px 8px 8px 2px;background:#dcf8c6;color:#111b21;font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.wct-nav-tabs{margin-bottom:8px}
+.wct-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0}
+.wct-chip code{padding:0;background:none;font-size:12px}
+.wct-preview{margin-top:12px;padding:14px;border-radius:8px;background:#efeae2;max-width:520px}
+.wct-preview__label{display:block;margin-bottom:8px;color:#50575e;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.wct-cc-prefix{margin-right:4px;font-weight:600}
+
+/* Recovery coupons + link tracking */
+.wct-coupon-col{width:170px}
+.wct-wa-col{width:190px}
+.wct-wa-buttons{display:flex;flex-wrap:wrap;gap:4px}
+.wct-wa--coupon{background:#f0fbf4!important}
+.wct-code{padding:1px 5px;border-radius:3px;background:#f0f0f1;font-size:12px;white-space:nowrap}
+.wct-coupon-meta{display:block;margin:4px 0 2px;color:#50575e;line-height:1.4}
+.wct-coupon-cell .button-link,.wct-coupon-actions .button-link{color:#b32d2e;font-size:12px}
+.wct-coupon-cell .wct-coupon-add{margin-top:4px}
+.wct-cstatus{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;line-height:1.6;background:#f0f0f1;color:#50575e;white-space:nowrap}
+.wct-cstatus--generated{background:#eef4fb;color:#135e96}
+.wct-cstatus--sent{background:#fff6e0;color:#7a5200}
+.wct-cstatus--applied{background:#e7f6ec;color:#146c2e}
+.wct-cstatus--used{background:#1d7a3a;color:#fff}
+.wct-cstatus--expired{background:#f0f0f1;color:#646970}
+.wct-cstatus--revoked{background:#fcf0f1;color:#8a2424}
+.wct-conv{display:block;margin-top:3px;color:#50575e}
+.wct-open-state{color:#8a4b00}
+.wct-open-state.is-opened{color:#146c2e;font-weight:600}
+.wct-section-title{margin:24px 0 8px;font-size:14px}
+.wct-coupon-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-bottom:16px}
+.wct-coupon-actions p{margin:0}
+.wct-coupon-card{margin-top:16px}
+.wct-coupon-card h3{display:flex;align-items:center;gap:8px}
+.wct-coupon-card h4{margin:16px 0 6px;font-size:13px}
+.wct-timeline{margin:0;padding:0 0 0 14px;border-left:2px solid #dcdcde;list-style:none}
+.wct-timeline li{position:relative;margin:0 0 8px;padding-left:4px;line-height:1.45}
+.wct-timeline li::before{content:"";position:absolute;left:-20px;top:6px;width:8px;height:8px;border-radius:50%;background:#8c8f94}
+.wct-tl__time{color:#646970;font-size:12px;margin-right:4px}
+.wct-modal--small .wct-modal__dialog{max-width:460px}
+.wct-modal--small .wct-modal__body{min-height:0}
+#wct-coupon-dialog{z-index:100001}
+.wct-form{padding:16px 24px}
+.wct-form__intro{margin:0 0 14px;color:#50575e}
+.wct-form__row{display:flex;flex-direction:column;gap:4px;margin:0 0 14px;padding:0;border:0}
+.wct-form__row>span{font-weight:600}
+.wct-form__row em{font-style:normal;font-weight:400;color:#646970}
+.wct-form__row input[type=number]{width:100%;max-width:220px}
+fieldset.wct-form__row{flex-direction:row;flex-wrap:wrap;gap:16px}
+fieldset.wct-form__row legend{width:100%;margin-bottom:4px;padding:0;font-weight:600}
+.wct-form__error{margin:0;padding:8px 12px;border-left:4px solid #d63638;background:#fcf0f1;color:#8a2424}
+.wct-modal__footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 24px;border-top:1px solid #dcdcde;background:#f6f7f7}
+@media (max-width:782px){.wct-form{padding:16px}.wct-modal__footer{padding:12px 16px}.wct-form__row input[type=number]{max-width:none}}
+/* The sessions table scrolls sideways on narrow screens instead of widening the whole admin page. */
+.wct-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.wct-sessions{min-width:1060px}
+.wct-order-ended{color:#b32d2e;font-weight:600}

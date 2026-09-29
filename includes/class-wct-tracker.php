@@ -34,7 +34,16 @@ class WCT_Tracker {
         add_action( 'wct_purge_sensitive', array( __CLASS__, 'purge_sensitive' ) );
         self::ensure_schedule();
     }
-    private static function settings() { return wp_parse_args( get_option( 'wct_settings', array() ), array( 'enabled' => 1, 'retention_days' => 90, 'abandon_timeout_minutes' => 60, 'email_alerts_enabled' => 0, 'email_alert_recipients' => get_option( 'admin_email' ) ) ); }
+    public static function defaults() {
+        return array(
+            'enabled' => 1, 'retention_days' => 90, 'abandon_timeout_minutes' => 60, 'email_alerts_enabled' => 0, 'email_alert_recipients' => get_option( 'admin_email' ),
+            'whatsapp_enabled' => 1, 'whatsapp_template' => WCT_Recovery::DEFAULT_TEMPLATE, 'whatsapp_country_code' => '880',
+            'restore_destination' => 'checkout', 'restore_link_days' => 7,
+            'coupon_enabled' => 1, 'coupon_type' => 'percent', 'coupon_amount' => 10, 'coupon_min_cart' => '', 'coupon_max_discount' => '',
+            'coupon_validity_hours' => 24, 'coupon_template' => WCT_Coupons::DEFAULT_TEMPLATE, 'coupon_offer_modal' => 1,
+        );
+    }
+    public static function settings() { return wp_parse_args( get_option( 'wct_settings', array() ), self::defaults() ); }
     public static function cron_schedules( $schedules ) {
         if ( ! isset( $schedules['wct_15_minutes'] ) ) {
             $schedules['wct_15_minutes'] = array( 'interval' => 15 * MINUTE_IN_SECONDS, 'display' => 'Every 15 minutes (Checkout Tracker)' );
@@ -53,7 +62,11 @@ class WCT_Tracker {
         wp_clear_scheduled_hook( 'wct_maintenance' );
         self::ensure_schedule();
     }
-    public static function deactivate() { wp_clear_scheduled_hook( 'wct_maintenance' ); wp_clear_scheduled_hook( 'wct_purge_sensitive' ); }
+    public static function deactivate() {
+        wp_clear_scheduled_hook( 'wct_maintenance' ); wp_clear_scheduled_hook( 'wct_purge_sensitive' );
+        // Without this plugin the "only via the personal link" check is gone, so close coupons that are still open.
+        if ( class_exists( 'WC_Coupon' ) && class_exists( 'WCT_Coupons' ) ) WCT_Coupons::close_all_active();
+    }
 
     private static function is_tracked_page() {
         if ( ! function_exists( 'is_checkout' ) || ! is_checkout() || is_order_received_page() || is_checkout_pay_page() ) return false;
@@ -83,11 +96,16 @@ class WCT_Tracker {
     }
     private static function new_key() {
         $key = wp_generate_uuid4();
+        self::adopt_session( $key );
+        return $key;
+    }
+    // Points this browser at the given session key; used for new sessions and for carts restored from a recovery link,
+    // so checkout activity and the eventual order land on that session even on another device.
+    public static function adopt_session( $key ) {
         if ( ! headers_sent() ) {
             setcookie( self::COOKIE, $key, array( 'expires' => time() + DAY_IN_SECONDS * 30, 'path' => COOKIEPATH ?: '/', 'domain' => COOKIE_DOMAIN ?: '', 'secure' => is_ssl(), 'httponly' => true, 'samesite' => 'Lax' ) );
         }
         $_COOKIE[ self::COOKIE ] = $key;
-        return $key;
     }
     private static function ensure_key() {
         $key = self::cookie_key();
@@ -346,6 +364,7 @@ class WCT_Tracker {
     public static function maintenance() {
         self::mark_abandoned();
         self::send_pending_alerts();
+        WCT_Coupons::expire_due();
         self::cleanup();
     }
     public static function mark_abandoned() {
@@ -453,8 +472,10 @@ class WCT_Tracker {
 
     public static function cleanup() {
         global $wpdb; $s=self::settings(); $days=max(1,absint($s['retention_days'])); $cut=gmdate('Y-m-d H:i:s',time()-DAY_IN_SECONDS*$days);
-        $st=WCT_DB::sessions_table(); $ft=WCT_DB::fields_table(); $it=WCT_DB::items_table();
+        // Restore links stay until their session is removed (they hold the link-open history). Coupon records and their
+        // history are kept after the session is gone: orders reference them.
+        $st=WCT_DB::sessions_table(); $ft=WCT_DB::fields_table(); $it=WCT_DB::items_table(); $tt=WCT_DB::tokens_table(); $et=WCT_DB::events_table();
         $ids=$wpdb->get_col($wpdb->prepare("SELECT id FROM $st WHERE created_at < %s",$cut)); if(!$ids) return;
-        foreach($ids as $id){$wpdb->delete($ft,array('session_id'=>(int)$id));$wpdb->delete($it,array('session_id'=>(int)$id));$wpdb->delete($st,array('id'=>(int)$id));}
+        foreach($ids as $id){$wpdb->delete($ft,array('session_id'=>(int)$id));$wpdb->delete($it,array('session_id'=>(int)$id));$wpdb->delete($tt,array('session_id'=>(int)$id));$wpdb->query($wpdb->prepare("DELETE FROM $et WHERE session_id=%d AND coupon_id IS NULL",$id));$wpdb->delete($st,array('id'=>(int)$id));}
     }
 }

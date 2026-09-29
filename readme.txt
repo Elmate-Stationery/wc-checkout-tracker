@@ -1,6 +1,6 @@
 WooCommerce Checkout Tracker
 ============================
-Version: 1.5.1
+Version: 1.7.0
 
 Features
 - Creates a checkout session when a customer opens WooCommerce checkout.
@@ -26,6 +26,22 @@ Installation
 Privacy
 This plugin stores customer checkout information. Configure retention and provide any required privacy notice/consent for your jurisdiction. Never modify the plugin to collect payment card data, CVV/CVC, passwords or payment tokens.
 
+
+= 1.7.0 =
+* Recovery coupons for abandoned checkout sessions: one-time WooCommerce coupons (percentage or fixed, optional minimum cart and maximum discount, expiry) generated per session from Add Coupon, with defaults in the new Recovery Coupon settings tab.
+* A coupon only works in the browser that opened its personal link; one active coupon per session; marked Used when an order with it is placed and stays Used even if that order is cancelled or fails (never usable twice); protected against concurrent checkouts.
+* Minimum cart value is re-checked on every cart change: the coupon is removed with a message below it and re-applied with a message when the cart qualifies again.
+* WhatsApp + Coupon button with its own template ({coupon_code}, {coupon_discount}, {coupon_expires}, {coupon_restore_url}); the normal WhatsApp button and template are unchanged.
+* Coupon offer popup after a coupon link restores the cart (current cart, discount, new total).
+* Recovery coupons are individual use: they cannot be combined with other coupons; a coupon link replaces another coupon in the cart (with a message), and automatic re-apply never removes a coupon the customer added.
+* Full coupon history (generated, sent, applied, removed/re-applied, used, order cancelled/failed, expired, revoked) and converted-with/without-coupon tracking.
+* Link-open tracking for every WhatsApp restore link: opened or not, how often, first/last open, device, opens after expiry.
+
+= 1.6.0 =
+* WhatsApp button per checkout session (table and session modal): opens WhatsApp with the customer number and a message from your template; records who contacted the customer and when.
+* WhatsApp & Cart Recovery settings tab: on/off, default country code, message template with placeholders and live preview, cart restore destination (Checkout or Cart), restore link lifetime.
+* {cart_restore_url}: secure, expiring, cross-device link that rebuilds the saved cart with current products, prices and stock, merges into an existing cart without removing anything, and redirects straight to the chosen page. Orders placed afterwards are linked to the original session.
+* {cart_items} and {cart_total} only include items the restore link can bring back (deleted, unpublished and out-of-stock products are left out, quantities capped to stock, total at current prices).
 
 = 1.5.1 =
 * 

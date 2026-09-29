@@ -5,6 +5,19 @@ class WCT_DB {
     public static function sessions_table() { global $wpdb; return $wpdb->prefix . 'wct_checkout_sessions'; }
     public static function fields_table() { global $wpdb; return $wpdb->prefix . 'wct_checkout_fields'; }
     public static function items_table() { global $wpdb; return $wpdb->prefix . 'wct_checkout_items'; }
+    public static function tokens_table() { global $wpdb; return $wpdb->prefix . 'wct_restore_tokens'; }
+    public static function coupons_table() { global $wpdb; return $wpdb->prefix . 'wct_coupons'; }
+    public static function events_table() { global $wpdb; return $wpdb->prefix . 'wct_events'; }
+
+    // History of what happened to a session / coupon / restore link. $args: coupon_id, token_id, order_id, user_id, data (array).
+    public static function log_event( $type, $session_id, $args = array() ) {
+        global $wpdb;
+        $wpdb->insert( self::events_table(), array(
+            'session_id' => (int) $session_id, 'coupon_id' => isset( $args['coupon_id'] ) ? (int) $args['coupon_id'] : null, 'token_id' => isset( $args['token_id'] ) ? (int) $args['token_id'] : null,
+            'type' => $type, 'user_id' => array_key_exists( 'user_id', $args ) ? $args['user_id'] : ( get_current_user_id() ?: null ), 'order_id' => isset( $args['order_id'] ) ? (int) $args['order_id'] : null,
+            'data' => ! empty( $args['data'] ) ? wp_json_encode( $args['data'] ) : null, 'created_at' => current_time( 'mysql', true ),
+        ) );
+    }
 
     public static function install() {
         global $wpdb;
@@ -13,6 +26,9 @@ class WCT_DB {
         $sessions = self::sessions_table();
         $fields   = self::fields_table();
         $items    = self::items_table();
+        $tokens   = self::tokens_table();
+        $coupons  = self::coupons_table();
+        $events   = self::events_table();
         $sql = "CREATE TABLE $sessions (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             session_key VARCHAR(64) NOT NULL,
@@ -35,6 +51,14 @@ class WCT_DB {
             abandoned_notified_at DATETIME NULL,
             abandoned_at DATETIME NULL,
             cart_hash CHAR(32) NULL,
+            whatsapp_contacted_at DATETIME NULL,
+            whatsapp_contacted_by BIGINT UNSIGNED NULL,
+            whatsapp_contact_count INT UNSIGNED NOT NULL DEFAULT 0,
+            restored_at DATETIME NULL,
+            whatsapp_coupon_contacted_at DATETIME NULL,
+            whatsapp_coupon_contacted_by BIGINT UNSIGNED NULL,
+            whatsapp_coupon_contact_count INT UNSIGNED NOT NULL DEFAULT 0,
+            converted_coupon_id BIGINT UNSIGNED NULL,
             PRIMARY KEY (id),
             UNIQUE KEY session_key (session_key),
             KEY status (status),
@@ -68,6 +92,71 @@ class WCT_DB {
             PRIMARY KEY (id),
             KEY session_id (session_id),
             KEY product_id (product_id)
+        ) $charset;
+        CREATE TABLE $tokens (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            session_id BIGINT UNSIGNED NOT NULL,
+            token_hash CHAR(64) NOT NULL,
+            created_at DATETIME NOT NULL,
+            expires_at DATETIME NOT NULL,
+            created_by BIGINT UNSIGNED NULL,
+            coupon_id BIGINT UNSIGNED NULL,
+            first_used_at DATETIME NULL,
+            last_used_at DATETIME NULL,
+            use_count INT UNSIGNED NOT NULL DEFAULT 0,
+            expired_open_count INT UNSIGNED NOT NULL DEFAULT 0,
+            last_device VARCHAR(100) NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY token_hash (token_hash),
+            KEY session_id (session_id),
+            KEY expires_at (expires_at),
+            KEY coupon_id (coupon_id)
+        ) $charset;
+        CREATE TABLE $coupons (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            session_id BIGINT UNSIGNED NOT NULL,
+            active_session_id BIGINT UNSIGNED NULL,
+            wc_coupon_id BIGINT UNSIGNED NULL,
+            code VARCHAR(32) NOT NULL,
+            discount_type VARCHAR(10) NOT NULL,
+            amount DECIMAL(20,6) NOT NULL,
+            min_cart DECIMAL(20,6) NULL,
+            max_discount DECIMAL(20,6) NULL,
+            validity_hours INT UNSIGNED NOT NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'generated',
+            created_at DATETIME NOT NULL,
+            created_by BIGINT UNSIGNED NULL,
+            expires_at DATETIME NOT NULL,
+            sent_at DATETIME NULL,
+            applied_at DATETIME NULL,
+            used_at DATETIME NULL,
+            order_id BIGINT UNSIGNED NULL,
+            discount_total DECIMAL(20,6) NULL,
+            expired_at DATETIME NULL,
+            revoked_at DATETIME NULL,
+            revoked_by BIGINT UNSIGNED NULL,
+            revoke_reason VARCHAR(255) NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY code (code),
+            UNIQUE KEY active_session_id (active_session_id),
+            KEY session_id (session_id),
+            KEY status (status),
+            KEY order_id (order_id)
+        ) $charset;
+        CREATE TABLE $events (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            session_id BIGINT UNSIGNED NOT NULL,
+            coupon_id BIGINT UNSIGNED NULL,
+            token_id BIGINT UNSIGNED NULL,
+            type VARCHAR(30) NOT NULL,
+            user_id BIGINT UNSIGNED NULL,
+            order_id BIGINT UNSIGNED NULL,
+            data LONGTEXT NULL,
+            created_at DATETIME NOT NULL,
+            PRIMARY KEY (id),
+            KEY session_id (session_id),
+            KEY coupon_id (coupon_id),
+            KEY type (type)
         ) $charset;";
         dbDelta( $sql );
         // Builds before 1.5.0 either used a weaker filter or shipped 1.4.0 without this cleanup; queue a one-time scan
@@ -77,7 +166,7 @@ class WCT_DB {
         }
         update_option( 'wct_db_version', WCT_VERSION );
         if ( false === get_option( 'wct_settings' ) ) {
-            add_option( 'wct_settings', array( 'enabled' => 1, 'retention_days' => 90, 'abandon_timeout_minutes' => 60, 'email_alerts_enabled' => 0, 'email_alert_recipients' => get_option('admin_email') ) );
+            add_option( 'wct_settings', WCT_Tracker::defaults() );
         }
     }
     public static function maybe_upgrade() {
