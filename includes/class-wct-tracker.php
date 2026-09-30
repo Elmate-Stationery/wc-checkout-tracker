@@ -195,7 +195,7 @@ class WCT_Tracker {
         // If a parallel request inserts the same key first, the unique index rejects this insert and both use that row.
         $suppress = $wpdb->suppress_errors( true );
         $wpdb->insert( WCT_DB::sessions_table(), array(
-            'session_key'=>$key, 'status'=>'initiated', 'user_id'=>get_current_user_id() ?: null,
+            'session_key'=>$key, 'status'=>'initiated', 'user_id'=>get_current_user_id() ?: null, 'is_logged_in'=>get_current_user_id() ? 1 : 0,
             'cart_total'=>0, 'currency'=>$currency, 'started_at'=>$now, 'last_activity_at'=>$now,
             'ip_hash'=>self::ip_hash(), 'user_agent'=>isset($_SERVER['HTTP_USER_AGENT']) ? mb_substr( sanitize_text_field( wp_unslash($_SERVER['HTTP_USER_AGENT']) ), 0, 1000 ) : null,
             'created_at'=>$now, 'updated_at'=>$now
@@ -219,7 +219,12 @@ class WCT_Tracker {
         $now = current_time( 'mysql', true );
         $update = array( 'last_activity_at' => $now, 'updated_at' => $now );
         $user_id = get_current_user_id();
-        if ( $user_id && $user_id !== (int) $row->user_id ) $update['user_id'] = $user_id;
+        // Logged-in customer (also when a guest logs in during checkout): flag the session and remember the account,
+        // so its details can be filled in from that account (see summary_update()).
+        if ( $user_id && ( $user_id !== (int) $row->user_id || ! (int) $row->is_logged_in ) ) {
+            $update['user_id'] = $user_id; $update['is_logged_in'] = 1;
+            $row->user_id = $user_id; $row->is_logged_in = 1; $row->account_changed = true;
+        }
         // If an abandoned visitor returns to checkout, resume the session. Conditional, so it can never undo a
         // conversion that lands at the same moment. abandoned_notified_at is kept: one alert per session.
         if ( 'abandoned' === $row->status ) {
@@ -243,13 +248,34 @@ class WCT_Tracker {
         // One statement for the whole batch; unlike REPLACE it updates rows in place.
         $wpdb->query( $wpdb->prepare( "INSERT INTO $t (session_id, field_key, field_value, updated_at) VALUES " . implode( ',', $rows ) . ' ON DUPLICATE KEY UPDATE field_value = VALUES(field_value), updated_at = VALUES(updated_at)', $args ) );
     }
-    // Recomputes the email / phone / name columns from stored fields, only when one of their source fields changed.
-    private static function summary_update( $session_id, $fields ) {
+    // Customer details from a registered customer's WooCommerce account: billing details first, then the WordPress
+    // account's email / name. Only ever called with a user ID the server itself recorded for the session.
+    public static function account_profile( $user_id ) {
+        $user = $user_id ? get_userdata( (int) $user_id ) : false;
+        if ( ! $user ) return array();
+        $customer = null;
+        if ( class_exists( 'WC_Customer' ) ) { try { $customer = new WC_Customer( (int) $user_id ); } catch ( Exception $e ) { $customer = null; } }
+        $get = function ( $method ) use ( $customer ) { return ( $customer && is_callable( array( $customer, $method ) ) ) ? trim( (string) $customer->$method() ) : ''; };
+        $first = $get( 'get_billing_first_name' ) ?: ( $get( 'get_shipping_first_name' ) ?: ( $get( 'get_first_name' ) ?: trim( (string) $user->first_name ) ) );
+        $last  = $get( 'get_billing_last_name' ) ?: ( $get( 'get_shipping_last_name' ) ?: ( $get( 'get_last_name' ) ?: trim( (string) $user->last_name ) ) );
+        $name  = trim( $first . ' ' . $last );
+        if ( '' === $name && $user->display_name !== $user->user_login ) $name = trim( (string) $user->display_name );
+        return array(
+            'email'   => sanitize_email( $get( 'get_billing_email' ) ?: $user->user_email ),
+            'phone'   => $get( 'get_billing_phone' ) ?: $get( 'get_shipping_phone' ),
+            'name'    => $name,
+            'country' => $get( 'get_billing_country' ) ?: $get( 'get_shipping_country' ),
+        );
+    }
+    // Recomputes the email / phone / name columns from stored checkout fields, when one of their source fields changed
+    // (or always with $force). For a logged-in customer, details not given at checkout come from their account, and
+    // account_fields records which ones ("email,phone,name") so the admin can show where they came from.
+    private static function summary_update( $session_id, $fields, $user_id = 0, $force = false ) {
         global $wpdb;
         $name_keys = array();
         foreach ( self::NAME_PREFIXES as $p ) { $name_keys[] = $p . 'first_name'; $name_keys[] = $p . 'last_name'; }
         $keys = array_merge( self::EMAIL_KEYS, self::PHONE_KEYS, $name_keys );
-        if ( ! array_intersect( array_keys( $fields ), $keys ) ) return array();
+        if ( ! $force && ! array_intersect( array_keys( $fields ), $keys ) ) return array();
         $t = WCT_DB::fields_table();
         $in = implode( ',', array_fill( 0, count( $keys ), '%s' ) );
         $values = wp_list_pluck( $wpdb->get_results( $wpdb->prepare( "SELECT field_key, field_value FROM $t WHERE session_id=%d AND field_key IN ($in)", array_merge( array( $session_id ), $keys ) ) ), 'field_value', 'field_key' );
@@ -267,10 +293,18 @@ class WCT_Tracker {
             $last  = isset( $values[ $p . 'last_name' ] ) ? $values[ $p . 'last_name' ] : '';
             if ( '' !== ( $name = trim( $first . ' ' . $last ) ) ) break;
         }
+        $from_account = array();
+        if ( $user_id ) {
+            $account = self::account_profile( $user_id );
+            if ( ! $email && ! empty( $account['email'] ) ) { $email = $account['email']; $from_account[] = 'email'; }
+            if ( '' === $phone && ! empty( $account['phone'] ) ) { $phone = $account['phone']; $from_account[] = 'phone'; }
+            if ( '' === $name && ! empty( $account['name'] ) ) { $name = $account['name']; $from_account[] = 'name'; }
+        }
         return array(
-            'email'         => $email ? mb_substr( $email, 0, 320 ) : null,
-            'phone'         => '' !== $phone ? mb_substr( $phone, 0, 100 ) : null,
-            'customer_name' => '' !== $name ? mb_substr( $name, 0, 255 ) : null,
+            'email'          => $email ? mb_substr( $email, 0, 320 ) : null,
+            'phone'          => '' !== $phone ? mb_substr( $phone, 0, 100 ) : null,
+            'customer_name'  => '' !== $name ? mb_substr( $name, 0, 255 ) : null,
+            'account_fields' => $from_account ? implode( ',', $from_account ) : null,
         );
     }
     private static function cart_rows() {
@@ -310,7 +344,11 @@ class WCT_Tracker {
         $row = self::current_session( true );
         if ( ! $row ) wp_send_json_error( array('message'=>'Could not start session.'), 500 );
         $update = self::activity_update( $row );
-        if ( 'converted' !== $row->status ) $update += self::sync_cart( $row );
+        if ( 'converted' !== $row->status ) {
+            $update += self::sync_cart( $row );
+            // Logged-in customer: fill customer details from their account even if they never touch a checkout field.
+            if ( (int) $row->user_id ) $update += self::summary_update( (int) $row->id, array(), (int) $row->user_id, true );
+        }
         self::save_session( $row, $update );
         wp_send_json_success( array('session_id'=>(int) $row->id) );
     }
@@ -323,7 +361,7 @@ class WCT_Tracker {
         if ( $fields ) self::store_fields( (int) $row->id, $fields );
         // A converted session keeps the customer details and cart snapshot of its order.
         if ( 'converted' !== $row->status ) {
-            if ( $fields ) $update += self::summary_update( (int) $row->id, $fields );
+            if ( $fields || ! empty( $row->account_changed ) ) $update += self::summary_update( (int) $row->id, $fields, (int) $row->user_id, ! empty( $row->account_changed ) );
             $update += self::sync_cart( $row );
         }
         self::save_session( $row, $update );
@@ -356,6 +394,11 @@ class WCT_Tracker {
         if ( $order->get_billing_email() ) $update['email'] = mb_substr( $order->get_billing_email(), 0, 320 );
         if ( $order->get_billing_phone() ) $update['phone'] = mb_substr( $order->get_billing_phone(), 0, 100 );
         if ( '' !== $name ) $update['customer_name'] = mb_substr( $name, 0, 255 );
+        // Details now taken from the order no longer count as "from account".
+        if ( $row->account_fields ) {
+            $left = array_diff( explode( ',', $row->account_fields ), array_keys( array_filter( array( 'email' => isset( $update['email'] ), 'phone' => isset( $update['phone'] ), 'name' => isset( $update['customer_name'] ) ) ) ) );
+            $update['account_fields'] = $left ? implode( ',', $left ) : null;
+        }
         self::save_session( $row, $update );
         $order->update_meta_data( '_wct_checkout_session_id', (int) $row->id );
         $order->save();

@@ -73,7 +73,10 @@ class WCT_Recovery {
     // WhatsApp number for a session row; $fields are its captured country fields (loaded when not given).
     public static function number_for( $row, $fields = null ) {
         if ( null === $fields ) { $all = self::session_fields( array( $row->id ), self::COUNTRY_KEYS ); $fields = isset( $all[ (int) $row->id ] ) ? $all[ (int) $row->id ] : array(); }
-        return self::whatsapp_number( $row->phone, self::first_value( $fields, self::COUNTRY_KEYS ) );
+        $country = self::first_value( $fields, self::COUNTRY_KEYS );
+        // Logged-in customer who entered no country at checkout: use the country on their account.
+        if ( '' === $country && ! empty( $row->user_id ) ) { $account = WCT_Tracker::account_profile( $row->user_id ); $country = $account['country'] ?? ''; }
+        return self::whatsapp_number( $row->phone, $country );
     }
     public static function plain_price( $amount, $currency ) {
         $html = wc_price( (float) $amount, array( 'currency' => $currency ) );

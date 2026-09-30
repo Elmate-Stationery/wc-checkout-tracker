@@ -75,6 +75,7 @@ $toc = array(
 <ul>
     <li>Every field on the checkout page as the shopper types it, including browser autofill: name, email, phone, addresses, order notes, the chosen payment method, delivery options and fields added by other plugins.</li>
     <li>The cart: products, variations (size, colour…), quantities, prices and total.</li>
+    <li><strong>Logged-in customers</strong>: the session is flagged <em>Logged in</em> and linked to the customer's account. Their name, email and phone are filled in from their account (WooCommerce billing details, or the account email and name) even if they never touch a checkout field. Anything they type at checkout replaces the account value and is tracked as usual. Guests are tracked from what they type (and browser autofill) only.</li>
     <li>Timestamps (started, last activity, abandoned, converted), the order number, the browser type, and a one-way hash of the IP address (the IP itself is not stored).</li>
 </ul>
 <h3>Never stored or emailed</h3>
@@ -88,13 +89,13 @@ $toc = array(
 
 <section id="wct-doc-sessions-screen">
 <h2>5. The Checkout Sessions screen</h2>
-<p><?php echo $sessions; ?> shows totals for each status at the top, a search box (name, phone, email or session key) and a status filter, then the list, newest activity first, 25 per page. On narrow screens the table scrolls sideways.</p>
+<p><?php echo $sessions; ?> shows totals for each status at the top, a search box (name, phone, email or session key), a status filter and a customer filter (<em>All customers</em>, <em>Logged-in customers</em>, <em>Guests</em>), then the list, newest activity first, 25 per page. On narrow screens the table scrolls sideways.</p>
 <h3>Columns</h3>
 <table class="widefat striped wct-doc-table">
 <thead><tr><th>Column</th><th>What it shows</th></tr></thead>
 <tbody>
 <tr><td>Session</td><td>The session ID and start time. Click it (or <strong>View</strong>) to open the details popup.</td></tr>
-<tr><td>Customer / Contact</td><td>Name, email and phone as typed at checkout (or from the order once converted).</td></tr>
+<tr><td>Customer / Contact</td><td>Name, email and phone as typed at checkout (or from the order once converted), with a <span class="wct-ctype wct-ctype--account">Logged in</span> or <span class="wct-ctype">Guest</span> badge. Details tagged <span class="wct-src">account</span> came from a logged-in customer's account rather than from the checkout form.</td></tr>
 <tr><td>Items / Total</td><td>Number of items and the cart total when last seen.</td></tr>
 <tr><td>Status</td><td>Initiated / Abandoned / Converted, plus <em>with coupon RCV-…</em> or <em>without coupon</em>, and <em>order cancelled</em> or <em>payment failed</em> when relevant.</td></tr>
 <tr><td>Last Activity / Order</td><td>When the shopper was last active; the order number with a link to the order.</td></tr>
@@ -104,7 +105,7 @@ $toc = array(
 <h3>The details popup</h3>
 <p>Opens over the list without leaving the page (a link like <code>…&amp;view=12</code>, for example from an alert email, opens it directly). It closes only with the <strong>×</strong> button. Tabs:</p>
 <ul>
-    <li><strong>Overview</strong>: customer, session timeline, order and cart summary.</li>
+    <li><strong>Overview</strong>: customer (including <em>Customer type</em>: logged-in customer or guest, and a link to the account), session timeline, order and cart summary.</li>
     <li><strong>Checkout fields</strong>: everything captured, grouped into Billing &amp; contact, Shipping, and Order &amp; other, with a filter box. Sensitive values show as <em>Redacted</em>.</li>
     <li><strong>Cart</strong>: products, options, quantities and prices.</li>
     <li><strong>WhatsApp</strong>: the number used, a preview of the normal message, the send buttons, and every link sent with its open history.</li>

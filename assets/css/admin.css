@@ -163,3 +163,8 @@ fieldset.wct-form__row legend{width:100%;margin-bottom:4px;padding:0;font-weight
 .wct-doc__body ol{list-style:decimal}
 .wct-doc__toc ol{list-style:decimal}
 .wct-doc-pre{margin:8px 0 12px;padding:10px 14px;border-radius:4px;background:#f6f7f7;font-size:12.5px;white-space:pre-wrap}
+/* Logged-in customer vs guest */
+.wct-ctype{display:inline-block;margin-top:3px;padding:0 6px;border-radius:9px;background:#f0f0f1;color:#646970;font-size:11px;font-weight:600;line-height:18px}
+.wct-ctype--account{background:#e5f0fa;color:#135e96}
+.wct-src{display:inline-block;margin-left:2px;padding:0 5px;border-radius:3px;background:#f6f7f7;border:1px solid #dcdcde;color:#646970;font-size:10px;font-weight:600;line-height:15px;text-transform:uppercase;letter-spacing:.02em;vertical-align:1px}
+.wct-src-note{margin:12px 0 0}

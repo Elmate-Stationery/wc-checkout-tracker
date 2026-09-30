@@ -1,6 +1,6 @@
 WooCommerce Checkout Tracker
 ============================
-Version: 1.7.4
+Version: 1.8.0
 
 Documentation: WooCommerce > Checkout Tracker > Documentation (inside WP Admin).
 
@@ -28,6 +28,9 @@ Installation
 Privacy
 This plugin stores customer checkout information. Configure retention and provide any required privacy notice/consent for your jurisdiction. Never modify the plugin to collect payment card data, CVV/CVC, passwords or payment tokens.
 
+
+= 1.8.0 =
+* Logged-in customers: sessions are flagged Logged in and linked to the customer account; name, email and phone are filled in from the account (WooCommerce billing details, else account email/name) even when no checkout field is touched, and tagged "account" in the admin. Checkout input still takes over. New customer filter (All / Logged-in / Guests). WhatsApp numbers use the account country when none was entered. Existing sessions with a user ID are marked logged in on upgrade.
 
 = 1.7.4 =
 * Coupon offer popup: the OK button uses the site primary colour (theme variable --tm-primary-color, fallback #006EB6) and can no longer be greyed out by theme button styles.

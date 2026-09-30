@@ -59,7 +59,10 @@ class WCT_DB {
             whatsapp_coupon_contacted_by BIGINT UNSIGNED NULL,
             whatsapp_coupon_contact_count INT UNSIGNED NOT NULL DEFAULT 0,
             converted_coupon_id BIGINT UNSIGNED NULL,
+            is_logged_in TINYINT(1) NOT NULL DEFAULT 0,
+            account_fields VARCHAR(50) NULL,
             PRIMARY KEY (id),
+            KEY is_logged_in (is_logged_in),
             UNIQUE KEY session_key (session_key),
             KEY status (status),
             KEY status_abandoned (status, abandoned_at),
@@ -164,6 +167,8 @@ class WCT_DB {
         if ( version_compare( (string) get_option( 'wct_db_version', '0' ), '1.5.0', '<' ) && false === get_option( 'wct_purge_cursor' ) ) {
             add_option( 'wct_purge_cursor', 0 );
         }
+        // Sessions from before the logged-in flag existed: a stored user ID means a logged-in customer.
+        $wpdb->query( "UPDATE $sessions SET is_logged_in=1 WHERE user_id > 0 AND is_logged_in=0" );
         // Upgrade an unedited copy of the old default coupon message to the new one (items on separate lines).
         $settings = get_option( 'wct_settings' );
         if ( is_array( $settings ) && isset( $settings['coupon_template'] ) && str_replace( "\r\n", "\n", $settings['coupon_template'] ) === WCT_Coupons::LEGACY_TEMPLATE ) {
