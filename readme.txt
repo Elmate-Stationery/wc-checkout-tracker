@@ -1,6 +1,6 @@
 WooCommerce Checkout Tracker
 ============================
-Version: 1.8.0
+Version: 1.8.1
 
 Documentation: WooCommerce > Checkout Tracker > Documentation (inside WP Admin).
 
@@ -28,6 +28,9 @@ Installation
 Privacy
 This plugin stores customer checkout information. Configure retention and provide any required privacy notice/consent for your jurisdiction. Never modify the plugin to collect payment card data, CVV/CVC, passwords or payment tokens.
 
+
+= 1.8.1 =
+* 
 
 = 1.8.0 =
 * Checkout Sessions: date filter on last activity (From/To plus quick links), opening on today by default; phone/email filter (has phone, has email, both, neither); serial number column plus session ID; a search ignores the date filter. Status cards follow the chosen dates.
