@@ -30,6 +30,8 @@ This plugin stores customer checkout information. Configure retention and provid
 
 
 = 1.8.0 =
+* Checkout Sessions: date filter on last activity (From/To plus quick links), opening on today by default; phone/email filter (has phone, has email, both, neither); serial number column plus session ID; a search ignores the date filter. Status cards follow the chosen dates.
+* Time zone setting (General tab), default Asia/Dhaka (GMT+6): every date shown by the plugin, the date filter, coupon expiry and WhatsApp messages use it, independent of the WordPress time zone. Stored data is unchanged (UTC).
 * Logged-in customers: sessions are flagged Logged in and linked to the customer account; name, email and phone are filled in from the account (WooCommerce billing details, else account email/name) even when no checkout field is touched, and tagged "account" in the admin. Checkout input still takes over. New customer filter (All / Logged-in / Guests). WhatsApp numbers use the account country when none was entered. Existing sessions with a user ID are marked logged in on upgrade.
 
 = 1.7.4 =

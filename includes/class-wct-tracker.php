@@ -38,10 +38,34 @@ class WCT_Tracker {
         return array(
             'enabled' => 1, 'retention_days' => 90, 'abandon_timeout_minutes' => 60, 'email_alerts_enabled' => 0, 'email_alert_recipients' => get_option( 'admin_email' ),
             'whatsapp_enabled' => 1, 'whatsapp_template' => WCT_Recovery::DEFAULT_TEMPLATE, 'whatsapp_country_code' => '880',
+            'timezone' => self::DEFAULT_TZ,
             'restore_destination' => 'checkout', 'restore_link_days' => 7,
             'coupon_enabled' => 1, 'coupon_type' => 'percent', 'coupon_amount' => 10, 'coupon_min_cart' => '', 'coupon_max_discount' => '',
             'coupon_validity_hours' => 24, 'coupon_template' => WCT_Coupons::DEFAULT_TEMPLATE, 'coupon_offer_modal' => 1,
         );
+    }
+    // ---- Time zone: data is stored in UTC; everything the plugin shows or filters by uses this zone (default Dhaka, GMT+6).
+    const DEFAULT_TZ = 'Asia/Dhaka';
+    public static function tz() {
+        static $cache = array();
+        $name = (string) self::settings()['timezone'];
+        if ( ! isset( $cache[ $name ] ) ) {
+            try { $cache[ $name ] = new DateTimeZone( $name ); } catch ( Exception $e ) { $cache[ $name ] = new DateTimeZone( '+06:00' ); } // Bangladesh has no DST: a fixed +6 is exact
+        }
+        return $cache[ $name ];
+    }
+    // A stored UTC datetime ('Y-m-d H:i:s') formatted in the plugin time zone, using WordPress's date/time format (or $fmt).
+    public static function local_date( $utc, $fmt = null ) {
+        if ( ! $utc ) return '';
+        return wp_date( $fmt ?: get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $utc . ' UTC' ), self::tz() );
+    }
+    public static function today_ymd() { return ( new DateTimeImmutable( 'now', self::tz() ) )->format( 'Y-m-d' ); }
+    // Local calendar date 'Y-m-d' -> [ start, end-exclusive ] as UTC 'Y-m-d H:i:s'. null when the date is invalid.
+    public static function day_bounds_utc( $ymd ) {
+        if ( ! preg_match( '/^(\d{4})-(\d{2})-(\d{2})$/', (string) $ymd, $m ) || ! checkdate( (int) $m[2], (int) $m[3], (int) $m[1] ) ) return null;
+        $start = new DateTimeImmutable( $ymd . ' 00:00:00', self::tz() );
+        $utc = new DateTimeZone( 'UTC' );
+        return array( $start->setTimezone( $utc )->format( 'Y-m-d H:i:s' ), $start->modify( '+1 day' )->setTimezone( $utc )->format( 'Y-m-d H:i:s' ) );
     }
     public static function settings() { return wp_parse_args( get_option( 'wct_settings', array() ), self::defaults() ); }
     public static function cron_schedules( $schedules ) {

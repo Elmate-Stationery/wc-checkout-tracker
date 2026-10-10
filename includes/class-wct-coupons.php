@@ -94,7 +94,7 @@ class WCT_Coupons {
         return $row->max_discount ? sprintf( '%s (up to %s)', $pct, WCT_Recovery::plain_price( $row->max_discount, get_woocommerce_currency() ) ) : $pct;
     }
     public static function expires_label( $row ) {
-        return wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $row->expires_at . ' UTC' ) );
+        return WCT_Tracker::local_date( $row->expires_at );
     }
     // Coupon placeholders for the coupon WhatsApp template.
     public static function placeholders( $row, $restore_url ) {

@@ -168,3 +168,12 @@ fieldset.wct-form__row legend{width:100%;margin-bottom:4px;padding:0;font-weight
 .wct-ctype--account{background:#e5f0fa;color:#135e96}
 .wct-src{display:inline-block;margin-left:2px;padding:0 5px;border-radius:3px;background:#f6f7f7;border:1px solid #dcdcde;color:#646970;font-size:10px;font-weight:600;line-height:15px;text-transform:uppercase;letter-spacing:.02em;vertical-align:1px}
 .wct-src-note{margin:12px 0 0}
+/* Date range + quick links + serial number */
+.wct-daterange{display:inline-flex;flex-wrap:wrap;gap:8px}
+.wct-daterange label{display:inline-flex;align-items:center;gap:4px;color:#50575e}
+.wct-quick{display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 2px}
+.wct-quick a{text-decoration:none;color:#2271b1}
+.wct-quick a.is-active{color:#1d2327;font-weight:600;text-decoration:underline}
+.wct-showing{margin:4px 0 12px;color:#50575e}
+.wct-serial{width:36px;color:#646970;text-align:right}
+.wct-filters{flex-wrap:wrap}

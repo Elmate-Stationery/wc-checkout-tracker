@@ -89,12 +89,24 @@ $toc = array(
 
 <section id="wct-doc-sessions-screen">
 <h2>5. The Checkout Sessions screen</h2>
-<p><?php echo $sessions; ?> shows totals for each status at the top, a search box (name, phone, email or session key), a status filter and a customer filter (<em>All customers</em>, <em>Logged-in customers</em>, <em>Guests</em>), then the list, newest activity first, 25 per page. On narrow screens the table scrolls sideways.</p>
+<p><?php echo $sessions; ?> opens on <strong>today's</strong> sessions (by last activity, in <?php echo esc_html( str_replace( '_', ' ', WCT_Tracker::tz()->getName() ) ); ?> time) and shows totals for each status for the chosen dates, a filter bar, then the list, newest activity first, 25 per page. On narrow screens the table scrolls sideways.</p>
+<h3>Filters</h3>
+<table class="widefat striped wct-doc-table">
+<thead><tr><th>Filter</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td>From / To dates</td><td>Shows sessions whose <em>last activity</em> falls on those calendar days (whole days, in the plugin time zone). The default is today. Clear both dates and press Filter, or click <strong>All dates</strong>, to see everything. Quick links: Today, Yesterday, Last 7 days, This month, All dates.</td></tr>
+<tr><td>Search</td><td>Name, phone, email or session key. <strong>A search ignores the date filter</strong>, so you can always find an older customer; the line under the filters says so.</td></tr>
+<tr><td>Status</td><td>Initiated, Abandoned or Converted.</td></tr>
+<tr><td>Customer type</td><td>All customers, Logged-in customers, or Guests.</td></tr>
+<tr><td>Phone / email</td><td>Any, <em>Has phone</em>, <em>Has email</em>, <em>Has phone + email</em>, or <em>Has neither</em>. Blank values count as missing.</td></tr>
+</tbody></table>
+<p>The line "Showing 67 sessions · today, 10 Oct 2026 …" always tells you how many sessions match and which dates are applied. Filters combine, and they are kept when you move to the next page.</p>
 <h3>Columns</h3>
 <table class="widefat striped wct-doc-table">
 <thead><tr><th>Column</th><th>What it shows</th></tr></thead>
 <tbody>
-<tr><td>Session</td><td>The session ID and start time. Click it (or <strong>View</strong>) to open the details popup.</td></tr>
+<tr><td>#</td><td>Serial number of the row in the current result, continuing across pages (page 2 starts at 26). It restarts when you change a filter.</td></tr>
+<tr><td>Session</td><td>The session key, with the permanent <em>session ID</em> and start time below it. Click it (or <strong>View</strong>) to open the details popup.</td></tr>
 <tr><td>Customer / Contact</td><td>Name, email and phone as typed at checkout (or from the order once converted), with a <span class="wct-ctype wct-ctype--account">Logged in</span> or <span class="wct-ctype">Guest</span> badge. Details tagged <span class="wct-src">account</span> came from a logged-in customer's account rather than from the checkout form.</td></tr>
 <tr><td>Items / Total</td><td>Number of items and the cart total when last seen.</td></tr>
 <tr><td>Status</td><td>Initiated / Abandoned / Converted, plus <em>with coupon RCV-…</em> or <em>without coupon</em>, and <em>order cancelled</em> or <em>payment failed</em> when relevant.</td></tr>
@@ -112,7 +124,7 @@ $toc = array(
     <li><strong>Coupon</strong>: the active coupon with Add / Revoke, and the full history of every coupon for this session.</li>
     <li><strong>Technical</strong>: session key, hashed IP, browser, and record dates.</li>
 </ul>
-<p>Times are shown in your site's time zone; hover a time to see it in UTC.</p>
+<p>All times use the plugin's <strong>Time zone</strong> setting (default Asia/Dhaka, GMT+6), whatever the WordPress time zone is; hover a time to see it in UTC.</p>
 </section>
 
 <section id="wct-doc-settings">
@@ -128,6 +140,7 @@ $toc = array(
 <tr><td>Abandoned email alerts</td><td>Emails the recipients when a session becomes Abandoned (rules in <a href="#wct-doc-alerts">section 11</a>).</td><td>Off</td><td><?php echo $on( ! empty( $s['email_alerts_enabled'] ) ); ?></td></tr>
 <tr><td>Alert recipients</td><td>One or more addresses separated by commas, semicolons or spaces.</td><td>Site admin email</td><td><?php echo $val( $s['email_alert_recipients'] ); ?></td></tr>
 <tr><td>Retention (days)</td><td>Sessions older than this are deleted automatically (1 to 3,650).</td><td>90</td><td><?php echo esc_html( $s['retention_days'] ); ?></td></tr>
+<tr><td>Time zone</td><td>Zone used for every date and time shown by the plugin, the date filter ("today" starts at midnight in this zone), coupon expiry and WhatsApp messages. Stored data stays in UTC and is not changed.</td><td>Asia/Dhaka</td><td><?php echo esc_html( str_replace( '_', ' ', WCT_Tracker::tz()->getName() ) ); ?></td></tr>
 </tbody></table>
 
 <h3>WhatsApp &amp; Cart Recovery</h3>
@@ -172,7 +185,7 @@ $toc = array(
 <tbody>
 <tr><td><code>{coupon_code}</code></td><td>The code, e.g. <code>RCV-X82K9QPA</code>.</td></tr>
 <tr><td><code>{coupon_discount}</code></td><td>"10%", "10% (up to <?php echo $cur; ?>500.00)" or "<?php echo $cur; ?>200.00".</td></tr>
-<tr><td><code>{coupon_expires}</code></td><td>When the coupon expires, in your site's time.</td></tr>
+<tr><td><code>{coupon_expires}</code></td><td>When the coupon expires, in the plugin time zone (default Asia/Dhaka).</td></tr>
 <tr><td><code>{coupon_restore_url}</code></td><td>The personal link that restores the cart <em>and</em> applies the coupon.</td></tr>
 </tbody></table>
 <p>All normal placeholders work in the coupon message too. In the coupon message <code>{cart_items}</code> lists <strong>one product per line</strong> (after 5 products it adds "+ N more"), so put it on its own line, as the default message does:</p>
